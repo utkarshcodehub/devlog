@@ -4,50 +4,36 @@ import { supabase } from './lib/supabase'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
-import ProtectedRoute from './components/ProtectedRoute'
+import NewEntry from './pages/NewEntry'
 
-export default function App() {
-  const [session, setSession] = useState(null)
+function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
       setLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-    return () => subscription.unsubscribe()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          {[0, 150, 300].map(delay => (
-            <div
-              key={delay}
-              className="w-2 h-2 bg-accent rounded-full animate-bounce"
-              style={{ animationDelay: `${delay}ms` }}
-            />
-          ))}
-        </div>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-ink/20 border-t-ink rounded-full animate-spin" />
+    </div>
+  )
+  return user ? children : <Navigate to="/login" />
+}
 
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login"    element={!session ? <Login />    : <Navigate to="/dashboard" replace />} />
-        <Route path="/signup"   element={!session ? <Signup />   : <Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute session={session}>
-            <Dashboard session={session} />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to={session ? '/dashboard' : '/login'} replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/new" element={<ProtectedRoute><NewEntry /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
   )
