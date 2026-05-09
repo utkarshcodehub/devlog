@@ -61,6 +61,12 @@ export default function Dashboard() {
             Dev<span className="text-accent">Log</span>
           </span>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/u/${username}`)}
+              className="font-mono text-xs text-accent hover:text-accent/70 transition-colors"
+            >
+              View public profile
+            </button>
             <span className="font-mono text-xs text-muted">@{username}</span>
             <button
               onClick={handleSignOut}
@@ -203,7 +209,7 @@ export default function Dashboard() {
             {[
               { day: 15, label: 'Auth + Skeleton', done: true },
               { day: 16, label: 'AI Entry Writer', done: true },
-              { day: 17, label: 'Public Profile Page', done: false },
+              { day: 17, label: 'Public Profile Page', done: true },
               { day: 18, label: 'Dashboard CRUD', done: false },
               { day: 19, label: 'Embeddable JS Widget', done: false },
               { day: 20, label: 'RSS Feed + Shareable Links', done: false },
