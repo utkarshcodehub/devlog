@@ -47,6 +47,28 @@ export async function saveEntry(entry) {
   return { success: true, entry: data };
 }
 
+export async function updateEntry(id, updates) {
+  const { data, error } = await supabase
+    .from('entries')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return { success: true, entry: data };
+}
+
+export async function deleteEntry(id) {
+  const { error } = await supabase
+    .from('entries')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
 export async function getEntries() {
   const { data, error } = await supabase
     .from('entries')
