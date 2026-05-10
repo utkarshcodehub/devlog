@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [editingEntry, setEditingEntry] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [togglingId, setTogglingId] = useState(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     async function init() {
@@ -68,6 +69,14 @@ export default function Dashboard() {
     setEditingEntry(null)
   }
 
+  const embedCode = `<script src="https://devlog-wheat.vercel.app/widget.js" data-username="${username}"><\/script>`
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(embedCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -88,7 +97,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Edit Modal */}
       {editingEntry && (
         <EditModal
           entry={editingEntry}
@@ -97,7 +105,6 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Header */}
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-display font-bold text-ink text-xl tracking-tight">
@@ -125,12 +132,8 @@ export default function Dashboard() {
         {/* Welcome + CTA */}
         <div className="flex items-start justify-between mb-10">
           <div>
-            <h1 className="font-display font-bold text-4xl text-ink mb-2">
-              Hey, {username}
-            </h1>
-            <p className="font-body text-muted text-base">
-              You write it. AI polishes it. The world sees it.
-            </p>
+            <h1 className="font-display font-bold text-4xl text-ink mb-2">Hey, {username}</h1>
+            <p className="font-body text-muted text-base">You write it. AI polishes it. The world sees it.</p>
           </div>
           <button
             onClick={() => navigate('/new')}
@@ -144,7 +147,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-12">
+        <div className="grid grid-cols-3 gap-4 mb-10">
           {[
             { label: 'Total entries', value: String(entries.length), sub: 'all time' },
             { label: 'Published', value: String(published.length), sub: 'public' },
@@ -156,6 +159,29 @@ export default function Dashboard() {
               <p className="font-mono text-xs text-muted mt-0.5">{stat.sub}</p>
             </div>
           ))}
+        </div>
+
+        {/* Embed snippet */}
+        <div className="bg-card border border-border rounded-2xl p-6 mb-10">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="font-display font-semibold text-ink text-base mb-0.5">Embed your changelog</p>
+              <p className="font-body text-muted text-sm">Drop this anywhere on your site or portfolio.</p>
+            </div>
+            <button
+              onClick={handleCopy}
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-semibold transition-all shrink-0 ${
+                copied
+                  ? 'bg-green-50 border border-green-200 text-green-700'
+                  : 'bg-ink text-white hover:bg-ink/80'
+              }`}
+            >
+              {copied ? '✓ Copied' : 'Copy'}
+            </button>
+          </div>
+          <div className="bg-bg border border-border rounded-xl px-4 py-3 font-mono text-xs text-muted overflow-x-auto">
+            <code>{embedCode}</code>
+          </div>
         </div>
 
         {/* Entries list */}
@@ -207,9 +233,7 @@ export default function Dashboard() {
                     </p>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-1 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Toggle status */}
                     <button
                       onClick={() => handleToggleStatus(entry)}
                       disabled={togglingId === entry.id}
@@ -233,7 +257,6 @@ export default function Dashboard() {
                       )}
                     </button>
 
-                    {/* Edit */}
                     <button
                       onClick={() => setEditingEntry(entry)}
                       title="Edit"
@@ -244,7 +267,6 @@ export default function Dashboard() {
                       </svg>
                     </button>
 
-                    {/* Delete */}
                     <button
                       onClick={() => handleDelete(entry.id)}
                       disabled={deletingId === entry.id}
@@ -266,9 +288,7 @@ export default function Dashboard() {
                 </div>
 
                 {entry.summary && (
-                  <p className="font-body text-sm text-muted leading-relaxed mb-4">
-                    {entry.summary}
-                  </p>
+                  <p className="font-body text-sm text-muted leading-relaxed mb-4">{entry.summary}</p>
                 )}
 
                 {entry.bullets && entry.bullets.length > 0 && (
@@ -288,10 +308,7 @@ export default function Dashboard() {
                 {entry.tags && entry.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {entry.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-0.5 bg-accent/5 border border-accent/15 rounded-md font-mono text-xs text-accent"
-                      >
+                      <span key={i} className="px-2.5 py-0.5 bg-accent/5 border border-accent/15 rounded-md font-mono text-xs text-accent">
                         {tag}
                       </span>
                     ))}
@@ -311,7 +328,7 @@ export default function Dashboard() {
               { day: 16, label: 'AI Entry Writer', done: true },
               { day: 17, label: 'Public Profile Page', done: true },
               { day: 18, label: 'Dashboard CRUD', done: true },
-              { day: 19, label: 'Embeddable JS Widget', done: false },
+              { day: 19, label: 'Embeddable JS Widget', done: true },
               { day: 20, label: 'RSS Feed + Shareable Links', done: false },
               { day: 21, label: 'Landing Page + Ship', done: false },
             ].map(item => (
