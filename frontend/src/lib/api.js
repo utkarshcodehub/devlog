@@ -70,9 +70,13 @@ export async function deleteEntry(id) {
 }
 
 export async function getEntries() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { data, error } = await supabase
     .from('entries')
     .select('*')
+    .eq('user_id', user.id)        // ← add this line
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
