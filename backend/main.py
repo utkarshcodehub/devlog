@@ -150,3 +150,58 @@ def get_entries(authorization: str = Header(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Fetch failed: {str(e)}")
+    
+from fastapi.responses import Response
+
+@app.get("/rss/{username}")
+def rss_feed(username: str):
+    try:
+        # Get user id from profiles table
+        profile = supabase.table("profiles").select("id").eq("username", username).limit(1).execute()
+        if not profile.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_id = profile.data[0]["id"]
+
+        entries = (
+            supabase.table("entries")
+            .select("*")
+            .eq("user_id", user_id)
+            .eq("status", "published")
+            .order("created_at", desc=True)
+            .limit(20)
+            .execute()
+        )
+
+        items = ""
+        for e in entries.data:
+            bullets = e.get("bullets", [])
+            bullets_html = "".join(f"<li>{b}</li>" for b in bullets) if bullets else ""
+            description = f"{e.get('summary', '')}<ul>{bullets_html}</ul>"
+            pub_date = e["created_at"].replace("Z", "+00:00") if e.get("created_at") else ""
+            items += f"""
+    <item>
+      <title><![CDATA[{e['title']}]]></title>
+      <link>https://devlog-wheat.vercel.app/u/{username}/{e['id']}</link>
+      <guid>https://devlog-wheat.vercel.app/u/{username}/{e['id']}</guid>
+      <pubDate>{pub_date}</pubDate>
+      <description><![CDATA[{description}]]></description>
+    </item>"""
+
+        xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>{username}'s DevLog</title>
+    <link>https://devlog-wheat.vercel.app/u/{username}</link>
+    <description>Developer changelog for @{username}</description>
+    <language>en-us</language>
+    {items}
+  </channel>
+</rss>"""
+
+        return Response(content=xml, media_type="application/rss+xml")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
