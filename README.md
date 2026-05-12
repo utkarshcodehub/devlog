@@ -2,7 +2,7 @@
 
 > Dump your raw build notes. AI turns them into a polished changelog — published, shareable, and embeddable anywhere.
 
-**Live:** [devlog-wheat.vercel.app](https://devlog-wheat.vercel.app) · **Built in 7 days** as Week 3 of a 21-day build challenge.
+**Live:** [devlog-wheat.vercel.app](https://devlog-wheat.vercel.app) ·
 
 ---
 
@@ -160,13 +160,3 @@ npm run dev
 - The difference between a feature and a product is the landing page — building the marketing surface forces clarity on what the actual value proposition is
 
 ---
-
-## Part of the 21-day build challenge
-
-This is Day 15–21 of a 21-day daily build challenge. Each day = one deployed project.
-
-- **Week 1** — Python/Streamlit data apps
-- **Week 2** — React + FastAPI + AI full-stack apps  
-- **Week 3** — DevLog (this project)
-
-All 21 projects: [github.com/yourusername](https://github.com/yourusername)
