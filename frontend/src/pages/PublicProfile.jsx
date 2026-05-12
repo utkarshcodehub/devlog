@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function PublicProfile() {
@@ -12,22 +12,18 @@ export default function PublicProfile() {
   useEffect(() => {
     async function load() {
       try {
-        // Find user by username
         const { data: profiles, error: profileErr } = await supabase
-          .from('public_profiles')
+          .from('profiles')
           .select('id')
           .eq('username', username)
           .limit(1)
 
         if (profileErr || !profiles || profiles.length === 0) {
-          setNotFound(true)
-          setLoading(false)
-          return
+          setNotFound(true); setLoading(false); return
         }
 
         const userId = profiles[0].id
 
-        // Fetch published entries
         const { data: entries, error: entriesErr } = await supabase
           .from('entries')
           .select('*')
@@ -38,7 +34,7 @@ export default function PublicProfile() {
         if (entriesErr) throw entriesErr
         setEntries(entries || [])
       } catch (err) {
-        console.error('Failed to load profile:', err)
+        console.error(err)
         setNotFound(true)
       } finally {
         setLoading(false)
@@ -47,17 +43,14 @@ export default function PublicProfile() {
     load()
   }, [username])
 
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
+  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  })
 
-  const getMonthYear = (dateStr) => {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-  }
+  const getMonthYear = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'long', year: 'numeric'
+  })
 
-  // Group entries by month
   const grouped = entries.reduce((acc, entry) => {
     const key = getMonthYear(entry.created_at)
     if (!acc[key]) acc[key] = []
@@ -65,53 +58,48 @@ export default function PublicProfile() {
     return acc
   }, {})
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-ink/20 border-t-ink rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-mono text-xs text-muted">Loading profile...</p>
-        </div>
-      </div>
-    )
-  }
+  const rssUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/rss/${username}`
 
-  if (notFound) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-card border-2 border-border rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <span className="font-display font-bold text-3xl text-muted">?</span>
-          </div>
-          <h1 className="font-display font-bold text-3xl text-ink mb-3">
-            @{username} not found
-          </h1>
-          <p className="font-body text-muted text-base mb-8 leading-relaxed">
-            This developer doesn't exist on DevLog yet. Maybe they haven't signed up, or you've got a typo.
-          </p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-6 py-3 bg-ink text-white font-display font-semibold text-sm rounded-xl hover:bg-ink/80 transition-all"
-          >
-            Go home
-          </button>
-        </div>
+  if (loading) return (
+    <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-ink/20 border-t-ink rounded-full animate-spin" />
+    </div>
+  )
+
+  if (notFound) return (
+    <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="text-center max-w-md">
+        <h1 className="font-display font-bold text-3xl text-ink mb-3">@{username} not found</h1>
+        <p className="font-body text-muted text-base mb-8">This developer doesn't exist on DevLog yet.</p>
+        <button onClick={() => navigate('/')} className="px-6 py-3 bg-ink text-white font-display font-bold text-sm rounded-xl hover:bg-ink/80 transition-all">
+          Go home
+        </button>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Minimal top bar */}
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="font-display font-bold text-ink text-base tracking-tight hover:text-accent transition-colors"
-          >
+          <button onClick={() => navigate('/')} className="font-display font-bold text-ink text-base tracking-tight hover:text-accent transition-colors">
             Dev<span className="text-accent">Log</span>
           </button>
-          <span className="font-mono text-xs text-muted">public changelog</span>
+          <div className="flex items-center gap-3">
+            <a
+              href={rssUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="RSS Feed"
+              className="font-mono text-xs text-muted hover:text-orange-500 transition-colors flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.18 15.64a2.18 2.18 0 010 4.36 2.18 2.18 0 010-4.36M4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44m0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93V10.1z"/>
+              </svg>
+              RSS
+            </a>
+            <span className="font-mono text-xs text-muted">public changelog</span>
+          </div>
         </div>
       </header>
 
@@ -120,17 +108,11 @@ export default function PublicProfile() {
         <div className="pt-16 pb-12 border-b border-border">
           <div className="flex items-center gap-5 mb-6">
             <div className="w-16 h-16 bg-ink rounded-2xl flex items-center justify-center shrink-0">
-              <span className="font-display font-bold text-2xl text-white">
-                {username[0].toUpperCase()}
-              </span>
+              <span className="font-display font-bold text-2xl text-white">{username[0].toUpperCase()}</span>
             </div>
             <div>
-              <h1 className="font-display font-bold text-4xl text-ink leading-none mb-1">
-                @{username}
-              </h1>
-              <p className="font-body text-muted text-sm">
-                {entries.length} update{entries.length !== 1 ? 's' : ''} published
-              </p>
+              <h1 className="font-display font-bold text-4xl text-ink leading-none mb-1">@{username}</h1>
+              <p className="font-body text-muted text-sm">{entries.length} update{entries.length !== 1 ? 's' : ''} published</p>
             </div>
           </div>
         </div>
@@ -138,50 +120,34 @@ export default function PublicProfile() {
         {/* Entries */}
         {entries.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="font-body text-muted text-base">
-              @{username} hasn't published anything yet.
-            </p>
+            <p className="font-body text-muted">@{username} hasn't published anything yet.</p>
           </div>
         ) : (
           <div className="py-10">
             {Object.entries(grouped).map(([month, monthEntries]) => (
               <div key={month} className="mb-12">
-                {/* Month header */}
                 <div className="flex items-center gap-4 mb-6">
-                  <h2 className="font-display font-semibold text-sm text-muted uppercase tracking-widest whitespace-nowrap">
-                    {month}
-                  </h2>
+                  <h2 className="font-display font-semibold text-sm text-muted uppercase tracking-widest whitespace-nowrap">{month}</h2>
                   <div className="flex-1 h-px bg-border" />
                 </div>
 
-                {/* Entries for this month */}
                 <div className="space-y-6">
                   {monthEntries.map((entry) => (
-                    <article
-                      key={entry.id}
-                      className="relative pl-8 before:absolute before:left-[7px] before:top-[28px] before:bottom-0 before:w-px before:bg-border last:before:hidden"
-                    >
-                      {/* Timeline dot */}
+                    <article key={entry.id} className="relative pl-8 before:absolute before:left-[7px] before:top-[28px] before:bottom-0 before:w-px before:bg-border last:before:hidden">
                       <div className="absolute left-0 top-[6px] w-[15px] h-[15px] rounded-full border-2 border-accent bg-bg" />
+                      <p className="font-mono text-xs text-muted mb-2">{formatDate(entry.created_at)}</p>
 
-                      {/* Date */}
-                      <p className="font-mono text-xs text-muted mb-2">
-                        {formatDate(entry.created_at)}
-                      </p>
-
-                      {/* Title */}
-                      <h3 className="font-display font-bold text-xl text-ink mb-2 leading-tight">
+                      <Link
+                        to={`/u/${username}/${entry.id}`}
+                        className="block font-display font-bold text-xl text-ink mb-2 leading-tight hover:text-accent transition-colors"
+                      >
                         {entry.title}
-                      </h3>
+                      </Link>
 
-                      {/* Summary */}
                       {entry.summary && (
-                        <p className="font-body text-sm text-muted leading-relaxed mb-4">
-                          {entry.summary}
-                        </p>
+                        <p className="font-body text-sm text-muted leading-relaxed mb-4">{entry.summary}</p>
                       )}
 
-                      {/* Bullets */}
                       {entry.bullets && entry.bullets.length > 0 && (
                         <div className="space-y-1.5 mb-4">
                           {(Array.isArray(entry.bullets) ? entry.bullets : []).map((bullet, i) => (
@@ -193,16 +159,10 @@ export default function PublicProfile() {
                         </div>
                       )}
 
-                      {/* Tags */}
                       {entry.tags && entry.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 pb-6">
                           {entry.tags.map((tag, i) => (
-                            <span
-                              key={i}
-                              className="px-2.5 py-0.5 bg-accent/5 border border-accent/15 rounded-md font-mono text-xs text-accent/70"
-                            >
-                              {tag}
-                            </span>
+                            <span key={i} className="px-2.5 py-0.5 bg-accent/5 border border-accent/15 rounded-md font-mono text-xs text-accent/70">{tag}</span>
                           ))}
                         </div>
                       )}
@@ -214,16 +174,10 @@ export default function PublicProfile() {
           </div>
         )}
 
-        {/* Footer */}
         <footer className="border-t border-border py-10 text-center">
           <p className="font-mono text-xs text-muted">
             Powered by{' '}
-            <button
-              onClick={() => navigate('/')}
-              className="text-accent hover:underline"
-            >
-              DevLog
-            </button>
+            <button onClick={() => navigate('/')} className="text-accent hover:underline">DevLog</button>
             {' '}— AI-polished developer changelogs
           </p>
         </footer>

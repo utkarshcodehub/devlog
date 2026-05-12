@@ -6,6 +6,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import NewEntry from './pages/NewEntry'
 import PublicProfile from './pages/PublicProfile'
+import EntryDetail from './pages/EntryDetail'
 
 function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true)
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/new" element={<ProtectedRoute><NewEntry /></ProtectedRoute>} />
         <Route path="/u/:username" element={<PublicProfile />} />
+        <Route path="/u/:username/:id" element={<EntryDetail />} />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
