@@ -104,7 +104,7 @@ export default function Landing() {
       <section className="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accent/5 border border-accent/20 rounded-full font-mono text-xs text-accent mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          Built in 7 days · Week 3 of a 21-day build challenge
+          
         </div>
 
         <h1 className="font-display font-bold text-6xl text-ink leading-[1.05] tracking-tight mb-6 max-w-4xl mx-auto">
@@ -405,7 +405,7 @@ export default function Landing() {
               Sign in
             </button>
           </div>
-          <p className="font-mono text-xs text-muted">Built in 7 days · Day 21 of 21</p>
+          <p className="font-mono text-xs text-muted"></p>
         </div>
       </footer>
     </div>

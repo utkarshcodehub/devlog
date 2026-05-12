@@ -43,7 +43,7 @@ export default function Login() {
         </div>
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-10 h-px bg-white/20" />
-          <span className="font-mono text-white/25 text-xs">21-day build challenge — day 15</span>
+          <span className="font-mono text-white/25 text-xs"></span>
         </div>
       </div>
 
